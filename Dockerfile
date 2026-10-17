@@ -5,7 +5,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /scheduler .
 
-FROM ubuntu:latest
+FROM alpine:3.22
 WORKDIR /app
 COPY --from=build /scheduler ./scheduler
 COPY web ./web
