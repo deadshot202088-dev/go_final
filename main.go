@@ -9,17 +9,21 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 	dbFile := "scheduler.db"
 	if envFile := os.Getenv("TODO_DBFILE"); envFile != "" {
 		dbFile = envFile
 	}
 
 	if err := db.Init(dbFile); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer db.Close()
 
-	if err := server.Run(); err != nil {
-		log.Fatal(err)
-	}
+	return server.Run()
 }
