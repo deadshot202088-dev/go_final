@@ -3,29 +3,18 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 
 	"go_final_project/pkg/api"
+	"go_final_project/pkg/config"
 )
 
-const (
-	webDir      = "./web"
-	defaultPort = 7540
-)
+const webDir = "./web"
 
-func Run() error {
-	port := defaultPort
-	if envPort := os.Getenv("TODO_PORT"); envPort != "" {
-		if p, err := strconv.Atoi(envPort); err == nil {
-			port = p
-		}
-	}
-
+func Run(cfg config.Config) error {
 	http.Handle("/", http.FileServer(http.Dir(webDir)))
-	api.Init()
+	api.Init(cfg.Password)
 
-	addr := fmt.Sprintf(":%d", port)
-	fmt.Printf("Сервер запущен на порту %d\n", port)
+	addr := fmt.Sprintf(":%d", cfg.Port)
+	fmt.Printf("Сервер запущен на порту %d\n", cfg.Port)
 	return http.ListenAndServe(addr, nil)
 }
