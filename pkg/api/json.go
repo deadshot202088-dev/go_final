@@ -12,7 +12,9 @@ func writeJSON(w http.ResponseWriter, data any) {
 		writeError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Write(resp)
+	if _, err := w.Write(resp); err != nil {
+	log.Printf("write response: %v", err)
+}
 }
 
 func writeError(w http.ResponseWriter, msg string, status int) {
