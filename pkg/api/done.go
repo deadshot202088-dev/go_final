@@ -8,6 +8,11 @@ import (
 )
 
 func doneTaskHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeError(w, "метод не поддерживается", http.StatusMethodNotAllowed)
+		return
+	}
+
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		writeError(w, "не указан идентификатор", http.StatusBadRequest)
