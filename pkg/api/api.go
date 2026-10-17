@@ -2,8 +2,13 @@ package api
 
 import "net/http"
 
+// password пароль из TODO_PASSWORD, задаётся один раз в Init
+var password string
+
 // Init регистрирует все обработчики
-func Init() {
+func Init(pass string) {
+	password = pass
+
 	http.HandleFunc("/api/nextdate", nextDateHandler)
 	http.HandleFunc("/api/signin", signInHandler)
 	http.HandleFunc("/api/task", auth(taskHandler))

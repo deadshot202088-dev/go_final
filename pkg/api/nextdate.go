@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -9,6 +10,10 @@ import (
 )
 
 const dateFormat = "20060102"
+
+// maxMonthSearchDays ограничивает перебор дней для правила m: за 8 лет
+// гарантированно встречается любой существующий день любого месяца (включая 29 февраля)
+const maxMonthSearchDays = 366 * 8
 
 func afterNow(date, now time.Time) bool {
 	return date.After(now)
@@ -141,13 +146,19 @@ func applyMonthDays(date *time.Time, now time.Time, parts []string) error {
 		return false
 	}
 
-	for {
+	// дни до now заведомо не подходят, поэтому начинаем перебор с более
+	// поздней из дат, а сам перебор ограничиваем, чтобы невыполнимые правила
+	// (например, m 31 2) не приводили к бесконечному циклу
+	if now.After(*date) {
+		*date = now
+	}
+	for i := 0; i < maxMonthSearchDays; i++ {
 		*date = date.AddDate(0, 0, 1)
-		if matches(*date) && afterNow(*date, now) {
-			break
+		if matches(*date) {
+			return nil
 		}
 	}
-	return nil
+	return fmt.Errorf("правило повторения m никогда не выполняется")
 }
 
 func lastDayOfMonth(t time.Time) int {
@@ -190,6 +201,11 @@ func parseMonthDays(s string) ([]int, error) {
 }
 
 func nextDateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "метод не поддерживается", http.StatusMethodNotAllowed)
+		return
+	}
+
 	nowParam := r.FormValue("now")
 	dateParam := r.FormValue("date")
 	repeat := r.FormValue("repeat")
@@ -209,8 +225,8 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
-	if _, err :=w.Write([]byte(next)); err != nil {
-	log.Printf("write response: %v", err)
-}
+
+	if _, err := w.Write([]byte(next)); err != nil {
+		log.Printf("write response: %v", err)
+	}
 }
