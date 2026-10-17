@@ -209,5 +209,8 @@ func nextDateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	w.Write([]byte(next))
+	
+	if _, err :=w.Write([]byte(next)); err != nil {
+	log.Printf("write response: %v", err)
+}
 }
